@@ -1,0 +1,86 @@
+###Script of second approach which was at the end not used for my analysis in the thesis
+## In this script I calculated statistics for the most negatives GPP anomaly during the event
+# The dataframe "df_neg_gppanom" is here used as basis
+
+
+##GPP during the event with the highest negative anomaly 
+##creating a new DF with event based statistic for the concerning spatiotemporal point per event
+#New empty DF to be filled in the following for loop 
+df_gppanom_min <- data.frame(ID = df_neg_gppanom$ID)
+df_gppanom_min$st_layer <- df_neg_gppanom$st_layer
+df_gppanom_min$end_layer <- df_neg_gppanom$end_layer
+df_gppanom_min$t_length <- df_neg_gppanom$t_length
+df_gppanom_min$centroid_lat <- NA
+df_gppanom_min$centroid_lon <- NA
+df_gppanom_min$time <- NA
+df_gppanom_min$gpp_anom <- NA
+df_gppanom_min$temp2mC <- NA
+df_gppanom_min$temp2mC_anom <- NA
+df_gppanom_min$soilmoi <- NA
+df_gppanom_min$soilmoi_anom <- NA
+
+##Calculation of statistics on this concerning spatiotemporal dimension
+ID <- 1
+n <- length(df_gppanom_min$ID)
+str(df_gppanom_min)
+
+for (ID in seq_along(df_gppanom_min$ID)) {
+  cat("\ri =", ID, " / ", n)
+  layer_s <- df_neg_gppanom$st_layer[ID]
+  layer_end <- df_neg_gppanom$end_layer[ID]
+  layer_ID <- df_neg_gppanom$ID[ID]
+  layer_event <- extreme_raster_eu_summer[[layer_s:layer_end]] == layer_ID
+  layer_event[layer_event == 0] <- NA 
+  layer_event[layer_event== TRUE] <- 1
+  ID_gpp_layer <- gpp_summer_anom[[layer_s:layer_end]]
+  ID_gppanom_raster <- raster::mask(ID_gpp_layer, layer_event, maskvalue = NA ,inverse = FALSE)
+  zax_ID <- zax_summer[layer_s:layer_end]
+  ID_gppanom_raster <- setZ(ID_gppanom_raster, zax_ID)
+  array_ID_gppanom <- as.array(ID_gppanom_raster)
+  min_ID_gppanom <- min(minValue(ID_gppanom_raster), na.rm = TRUE)
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "gpp_anom"] <- min_ID_gppanom
+  dim_ID <- which(array_ID_gppanom == min_ID_gppanom, arr.ind=TRUE)
+  dim_lat <- dim_event(dim_ID)[1]
+  dim_lon <- dim_event(dim_ID)[2]
+  dim_time <- dim_event(dim_ID)[3] 
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "centroid_lat"] <- dim_lat
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "centroid_lon"] <- dim_lon
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "time"] <- dim_time
+  ID_temp_layer <- temp_2m_eu_summer[[layer_s:layer_end]]
+  ID_temp_raster <- raster::mask(ID_temp_layer, layer_event, maskvalue = NA ,inverse = FALSE)
+  ID_temp_raster <- setZ(ID_temp_raster, zax_ID)
+  array_ID_temp <- as.array(ID_temp_raster)
+  actual_tmp_ID <- kelvin.to.celsius(array_ID_temp[dim_ID])
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "temp2mC"] <-  actual_tmp_ID
+  ID_tempanom_layer <- temp_2m_summer_anom[[layer_s:layer_end]]
+  ID_tempanom_raster <- raster::mask(ID_tempanom_layer, layer_event, maskvalue = NA ,inverse = FALSE)
+  ID_tempanom_raster <- setZ(ID_tempanom_raster, zax_ID)
+  array_ID_tempanom <- as.array(ID_tempanom_raster)
+  actual_tmpanom_ID <- array_ID_tempanom[dim_ID]
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "temp2mC_anom"] <-  actual_tmpanom_ID
+  ID_soilmoi_layer <- soimoi_eu_summer[[layer_s:layer_end]]
+  ID_soilmoi_raster <- raster::mask(ID_soilmoi_layer, layer_event, maskvalue = NA ,inverse = FALSE)
+  ID_soilmoi_raster <- setZ(ID_soilmoi_raster, zax_ID)
+  array_ID_soilmoi <- as.array(ID_soilmoi_raster)
+  actual_soilmoi_ID <- array_ID_soilmoi[dim_ID]
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "soilmoi"] <-  actual_soilmoi_ID
+  ID_soilmoianom_layer <- s_mois_summer_anom[[layer_s:layer_end]]
+  ID_soilmoianom_raster <- raster::mask(ID_soilmoianom_layer, layer_event, maskvalue = NA ,inverse = FALSE)
+  ID_soilmoianom_raster <- setZ(ID_soilmoianom_raster, zax_ID)
+  array_ID_soilmoianom <- as.array(ID_soilmoianom_raster)
+  actual_soilmoianom_ID <- array_ID_soilmoianom[dim_ID]
+  df_gppanom_min[df_gppanom_min$ID == layer_ID, "soilmoi_anom"] <-  actual_soilmoianom_ID
+}
+
+##Formatting the df
+df_gppanom_min$centroid_lat <- as.numeric(df_gppanom_min$centroid_lat)
+df_gppanom_min$centroid_lon <- as.numeric(df_gppanom_min$centroid_lon)
+df_gppanom_min$time <- as.character(df_gppanom_min$time)
+df_gppanom_min$time <- as.Date(df_gppanom_min$time, format = "%Y_%m_%d")
+df_gppanom_min$t_length <- df_gppanom_min$t_length -1
+df_gppanom_min$t_length <- df_gppanom_min$t_length *8
+df_gppanom_min$t_length[df_gppanom_min$t_length == 0] <- 1
+df_gppanom_min$gpp_anom <- round(df_gppanom_min$gpp_anom, digits = 2)
+df_gppanom_min$temp2mC_anom <- round(df_gppanom_min$temp2mC_anom, digits = 2)
+
+#saveRDS(df_gppanom_min, "df_gppanom_min")
