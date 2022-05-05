@@ -1,0 +1,191 @@
+##Maps and Plots for the results from the second approach (script 04)
+
+min_anom_all <- df_gppanom_min%>%
+  ggplot(aes(y = temp2mC_anom, x = soilmoi_anom, colour = gpp_anom))+
+  geom_point() +
+  scale_colour_gradient2(low = "red", mid = "lightgreen", high = "white", 
+                         midpoint = 0, name = "GPP anomaly") +
+  theme(legend.title = element_text(), 
+        legend.text = element_text(),
+        panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+  labs(y = "Temperature[°C]", x = "Soil moisture[-]")
+
+
+
+min_anom <- df_gppanom_min%>%
+  ggplot(aes(y = temp2mC_anom, x = gpp_anom, colour = gpp_anom))+
+  geom_point() +
+  scale_colour_gradient2(low = "darkgreen", mid = "lightgreen", high = "white", 
+                         midpoint = 0, name = "GPP anomaly") +
+  theme(legend.title = element_text(), 
+        legend.text = element_text(),
+        panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+  labs(y = "Temperature anomaly [°C]", x = "GPP anomaly",
+       size = "GPP integer") 
+
+
+all_plot <- ggarrange(min_anom_all, min_anom)
+
+
+
+
+
+##map with minimum of gpp during the event and actual temp
+#map with points in colour per month and actual temp
+set.seed(66)
+anom_plot <- ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, col = gpp_anom)) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC_anom), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_continuous(name = "GPP anomaly") +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+
+temp_neg_gpp <- ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, col = factor(month(time))), alpha=0.5) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_discrete(name = "Month") +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+
+set.seed(66)
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, col = temp2mC_anom)) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_gradient2() +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+
+set.seed(66)
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, size = t_length, col = gpp_anom)) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_gradient2() +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, col = factor(month(time))), alpha=0.5) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC_anom), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_discrete(name = "Month") +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+#maps_overview <- ggarrange(temp_neg_gpp, anom_plot)
+
+
+
+
+#actual temp values and color in soilmoi anom
+set.seed(66)
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data =df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, col = soilmoi_anom)) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC_anom), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_gradient2(name = "soilmoi anom") +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_gppanom_min, aes(x = centroid_lon , y= centroid_lat, size = desc(gpp_anom), col = gpp_int)) +
+  geom_text_repel(data = df_gppanom_min,aes(x = centroid_lon, y = centroid_lat, label = temp2mC), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_continuous(name = "gpp inte") +
+  scale_size_continuous(name = "gpp anom") +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+#maps_overview <- ggarrange(map_anom_soil_tem, gpp_anom_month)
+
+
+## df and maps per month 
+
+df_5 <- df_gppanom_min %>%
+  filter(month(time) == 5)
+
+df_6 <- df_gppanom_min %>%
+  filter(month(time) == 6)
+
+df_7 <- df_gppanom_min %>%
+  filter(month(time) == 7)
+
+df_8 <- df_gppanom_min %>%
+  filter(month(time) == 8)
+
+
+set.seed(66)
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_7, aes(x = centroid_lon , y= centroid_lat, col = temp2mC_anom)) +
+  geom_text_repel(data = df_7, aes(x = centroid_lon, y = centroid_lat, label = gpp_anom), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_gradient2(high = "red", mid = "white", low = "blue",midpoint = 0) +
+  theme(legend.text = element_text(size= 5)) +
+  theme(panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+set.seed(66)
+ggplot(data = world) +
+  geom_sf(col = "darkgray") +
+  geom_point(data = df_7, aes(x = centroid_lon , y= centroid_lat, col = soilmoi_anom)) +
+  geom_text_repel(data = df_7, aes(x = centroid_lon, y = centroid_lat, label = temp2mC), 
+                  size = 2, color = "red", fontface = "bold", 
+                  max.overlaps = 70) +
+  coord_sf(xlim = c(-10, 40), ylim = c(35, 74), expand = TRUE) +
+  labs(y = "", x = "") +
+  scale_color_gradient2(high = "red", mid = "white", low = "blue",midpoint = 0) +
+  theme(legend.text = element_text(size= 5),
+        panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+
+
+#plot_5 <-ggarrange(plot_5_1 + ggtitle("Anom GPP & Temp"), plot_5_2 + ggtitle("Anom Soilmoi & act. Temp"))
+#plot_6 <-ggarrange(plot_6_1+ ggtitle("Anom GPP & Temp"), plot_6_2 + ggtitle("Anom Soilmoi & act. Temp"))
+#plot_7 <-ggarrange(plot_7_1+ ggtitle("Anom GPP & Temp"), plot_7_2 + ggtitle("Anom Soilmoi & act. Temp"))
+#plot_8 <-ggarrange(plot_8_1+ ggtitle("Anom GPP & Temp"), plot_8_2 + ggtitle("Anom Soilmoi & act. Temp"))
